@@ -3,7 +3,7 @@ const ConnectionRequest = require('../models/connectionRequest');
 const express = require('express');
 const userRouter = express.Router();
 
-const User = require("../models/users");
+const User = require("../models/user");
 
 const USER_SAFE_NAME = "firstName lastName profileurl age gender about skills"
 
@@ -49,7 +49,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
 });
 
-userRouter.post("/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user;
         const page = parseInt(req.query.page) || 1;

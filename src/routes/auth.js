@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/users');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { validateSignupData } = require('../utils/validateSignupData');
 
@@ -33,6 +33,7 @@ authRouter.post('/signup', async (req, res) => {
     })
   } catch (err) {
     res.status(400).json({ error: err.message });
+    
   }
 });
 
@@ -43,10 +44,7 @@ authRouter.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
     const user = await User.findOne({ emailId: emailId });
     if (!user) {
-      if (!user) {
-        return res.status(404).send("User not found !!");
-      }
-
+      return res.status(404).send("User not found !!");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

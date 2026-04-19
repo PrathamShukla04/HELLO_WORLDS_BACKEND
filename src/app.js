@@ -1,27 +1,57 @@
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const connectDB = require('./config/database');
-require('dotenv').config();
+require("dotenv").config();
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const connectDB = require("./config/database");
+const cors = require("cors");
+const session = require("express-session");
+const passport = require("./config/passport");
 
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  session({
+    // Secret key used to sign the session ID cookie
+    secret: "secret",
 
-const authRouter = require('./routes/auth');
-const profileRouter = require('./routes/profile');
-const requestRouter = require('./routes/request');
-const userRouter = require('./routes/user');
-app.use('/', authRouter);
-app.use('/', profileRouter);
-app.use('/', requestRouter);
-app.use('/', userRouter);
+    // Do not save session again if nothing changed
+    resave: false,
+
+    // Save new sessions even if they are empty
+    saveUninitialized: true,
+
+  })
+);
+
+const authRouter = require("./routes/auth");
+const googleAuthRouter = require("./routes/googleAuth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
+app.use("/", googleAuthRouter);
+
 connectDB()
   .then(() => {
-    console.log("Database connected successfully");
+    console.log("database connection established...");
+
     app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port ${process.env.PORT}`);
+      console.log("our server is running on the port successfully");
     });
-  })
-  .catch(() => {
-    console.log("Database connection failed");
+  }).catch((err) => {
+    console.log("Database cannot be connected");
   });
