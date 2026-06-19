@@ -24,7 +24,7 @@ passport.use(
                         lastName: profile.name.familyName,
                         emailId: email,
                         profilePhoto: profile.photos[0].value,
-                        password: "Google@0876*&^%^%#$#"
+                        password: "Google@@#$%^&*87654321"
                     });
 
                     await user.save();

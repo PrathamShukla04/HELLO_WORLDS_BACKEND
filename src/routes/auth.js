@@ -1,75 +1,72 @@
-const express = require('express');
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
-const { validateSignupData } = require('../utils/validateSignupData');
+const express = require("express");
+const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const {validateSignUpData} = require("../utils/validation");
 
 const authRouter = express.Router();
 
-/* ---------- SIGNUP ---------- */
-authRouter.post('/signup', async (req, res) => {
-  try {
-    validateSignupData(req);
+authRouter.post("/signup", async (req, res) => {
+    try {
+        validateSignUpData(req);
+        const { firstName, lastName, emailId, password } = req.body;
+        const hashPassword = await bcrypt.hash(password, 10);
+ 
+        const user = new User({
+            firstName, lastName, emailId, password: hashPassword
+        })
 
-    const { firstName, lastName, emailId, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+        const savedUser = await user.save();
+        const token = await savedUser.getJWT();
 
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: hashedPassword
-    });
+        res.cookie("token",token,{
+           expires: new Date(Date.now()+8*3600000),
+        });
 
-    const savedUser = await user.save();
-    const token = await savedUser.getJWT();
+        res.json({
+            message: "user added successfully",
+            data: savedUser
+        })
 
-    res.cookie("token", token, {
-      expires: new Date(Date.now() + 3600000)
-    })
+    } catch (err) {
+        res.status(404).send("Error :" + err.message);
+    }
+})
 
-    res.json({
-      message: "User registered successfully",
-      data: savedUser
-    })
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-    
-  }
-});
 
-/* ---------- LOGIN ---------- */
 authRouter.post("/login", async (req, res) => {
-  try {
+    try {
 
-    const { emailId, password } = req.body;
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) {
-      return res.status(404).send("User not found !!");
+         const { emailId, password } = req.body;
+         const user = await User.findOne({emailId : emailId});
+         if(!user){
+            res.send("user not found !!")
+         }
+
+         const isPasswordValid = await bcrypt.compare(password,user.password);
+         if(isPasswordValid){
+             const token = await user.getJWT();
+
+        res.cookie("token",token,{
+           expires: new Date(Date.now()+8*3600000),
+        });
+            res.send("Login Successfull !!")
+         }else{
+            throw new Error("Invalid Credentials !!")
+         }
+
+
+    } catch (err) {
+        res.status(404).send("Error :" + err.message);
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (isPasswordValid) {
-      const token = await user.getJWT();
-
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 8 * 3600000),
-      });
-      res.send("Login Successfull !!")
-    } else {
-      throw new Error("Invalid Credentials !!")
-    }
-
-  } catch (err) {
-    res.status(404).send("Error :" + err.message);
-  }
 });
 
-/* ---------- LOGOUT ---------- */
-authRouter.post('/logout', (req, res) => {
-  res.cookie("token", null, {
-    expires: new Date(Date.now()),
-  });
-  res.send("Logout Successfull !!")
-});
+
+authRouter.post("/logout", async (req, res) => {
+      res.cookie("token", null, {
+        expires: new Date(Date.now()),
+    });
+    res.send("logout successfull!!!!");
+})
+
 
 module.exports = authRouter;

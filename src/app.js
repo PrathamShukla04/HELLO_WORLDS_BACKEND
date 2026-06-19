@@ -2,14 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/database");
+const User = require("./models/user");
+const ConnectionRequestModel = require('./models/connectionRequest');
 const cors = require("cors");
 const session = require("express-session");
 const passport = require("./config/passport");
-
+const http = require("http");
 const app = express();
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+   origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -18,15 +21,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   session({
-    // Secret key used to sign the session ID cookie
     secret: "secret",
-
-    // Do not save session again if nothing changed
     resave: false,
-
-    // Save new sessions even if they are empty
-    saveUninitialized: true,
-
+    saveUninitialized: true
   })
 );
 
@@ -35,6 +32,11 @@ const googleAuthRouter = require("./routes/googleAuth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const PostRouter = require("./routes/post");
+const chatRouter = require("./routes/chat");
+const paymentRouter = require("./routes/payment");
+const initializeSocket = require("./utils/socket");
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -44,12 +46,18 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", googleAuthRouter);
+app.use("/", PostRouter);
+app.use("/", chatRouter);
+app.use("/", paymentRouter);
+
+const server = http.createServer(app);
+initializeSocket(server);
 
 connectDB()
   .then(() => {
     console.log("database connection established...");
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, "0.0.0.0",() => {
       console.log("our server is running on the port successfully");
     });
   }).catch((err) => {
