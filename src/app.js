@@ -44,6 +44,7 @@ const chatRouter = require("./routes/chat");
 const paymentRouter = require("./routes/payment");
 const initializeSocket = require("./utils/socket");
 const resumeRouter = require("./routes/resume");
+app.use("/api", require("./routes/news"));
 app.use("/", resumeRouter);
 
 app.use(passport.initialize());
