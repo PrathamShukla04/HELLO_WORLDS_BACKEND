@@ -43,7 +43,8 @@ const PostRouter = require("./routes/post");
 const chatRouter = require("./routes/chat");
 const paymentRouter = require("./routes/payment");
 const initializeSocket = require("./utils/socket");
-
+const resumeRouter = require("./routes/resume");
+app.use("/", resumeRouter);
 
 app.use(passport.initialize());
 app.use(passport.session());
