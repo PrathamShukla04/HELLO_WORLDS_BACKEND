@@ -4,6 +4,7 @@ const { validateEditProfileData } = require("../utils/validation");
 const profileRouter = express.Router();
 const bcrypt = require("bcryptjs");
 const chatUpload = require("../middlewares/chatUpload");
+const resumeUpload = require("../middlewares/resumeUpload"); 
 const User = require("../models/user");
 const cloudinary = require("../config/cloudinary");
 const { getMyProfile ,getUserProfile} = require("../controller/profileController");
@@ -153,7 +154,7 @@ profileRouter.post( "/profile/upload-cover",
 
 profileRouter.post( "/profile/upload-resume",
   userAuth,
-  chatUpload.single("resume"),
+  resumeUpload.single("resume"),   // 👈 sirf ye line change hui
   async (req, res) => {
     try {
       if (!req.file) throw new Error("No file uploaded");
@@ -179,7 +180,7 @@ profileRouter.post( "/profile/upload-resume",
 
       const result = await cloudinary.uploader.upload(filePath, {
         folder: "resumes",
-        resource_type: "raw",               // for non-image files
+        resource_type: "raw",
         use_filename: true,
         unique_filename: true,
         access_mode: "public",

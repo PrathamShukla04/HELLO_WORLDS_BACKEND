@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -10,12 +11,18 @@ const passport = require("./config/passport");
 const http = require("http");
 const app = express();
 
-app.use(
-  cors({
-   origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://devbridges.shop",
+    "https://www.devbridges.shop"
+  ],
+  credentials: true,
+}));
+
+// IMPORTANT: webhook route ko raw body chahiye signature verify karne ke liye,
+// isliye ye express.json() SE PEHLE aana zaroori hai, sirf isi specific path ke liye.
+app.use("/payment/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json());
 app.use(cookieParser());
